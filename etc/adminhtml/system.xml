@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_xsd.xsd">
+    <system>
+        <tab id="gardenlawn" translate="label" sortOrder="200">
+            <label>GardenLawn</label>
+        </tab>
+        <section id="gardenlawn_commands" translate="label" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+            <class>separator-top</class>
+            <label>Console Commands</label>
+            <tab>gardenlawn</tab>
+            <resource>GardenLawn_AdminCommands::config_gardenlawn_commands</resource>
+            <group id="mediagallery_commands" translate="label" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Media Gallery Commands</label>
+                <!-- SyncS3Assets Command -->
+                <field id="sync_s3_assets_button" translate="label" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Synchronize S3 Assets</label>
+                    <frontend_model>GardenLawn\AdminCommands\Block\System\Config\SyncS3AssetsButton</frontend_model>
+                </field>
+                <!-- PopulateAssetLinks Command -->
+                <field id="populate_asset_links_button" translate="label" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Populate Asset Links</label>
+                    <frontend_model>GardenLawn\AdminCommands\Block\System\Config\PopulateAssetLinksButton</frontend_model>
+                </field>
+                <!-- DeduplicateAssets Command -->
+                <field id="deduplicate_assets_button" translate="label" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Deduplicate Assets</label>
+                    <frontend_model>GardenLawn\AdminCommands\Block\System\Config\DeduplicateAssetsButton</frontend_model>
+                </field>
+                <!-- ConvertImagesToWebp Command -->
+                <field id="convert_images_to_webp_button" translate="label" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Convert Images to WebP</label>
+                    <frontend_model>GardenLawn\AdminCommands\Block\System\Config\ConvertImagesToWebpButton</frontend_model>
+                </field>
+            </group>
+            <group id="core_commands" translate="label" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Core Commands</label>
+                <!-- SyncStaticAssets Command -->
+                <field id="sync_static_assets_button" translate="label" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Synchronize Static Assets</label>
+                    <frontend_model>GardenLawn\AdminCommands\Block\System\Config\SyncStaticAssetsButton</frontend_model>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

@@ -1,0 +1,114 @@
+<?php
+/** @var \GardenLawn\AdminCommands\Block\System\Config\AbstractCommandButton $block */
+?>
+
+<div class="admin__field-control">
+    <button type="button"
+            class="action- scalable action-primary"
+            id="<?= $block->getElement()->getId() ?>_button"
+            data-ui-id="widget-button-<?= $block->getElement()->getId() ?>_button">
+        <span><?= $block->escapeHtml($block->getElement()->getLabel()) ?></span>
+    </button>
+    <div class="admin__field-note">
+        <?= $block->escapeHtml($block->getElement()->getTooltip()) ?>
+    </div>
+
+    <?php foreach ($block->getCommandOptions() as $option): ?>
+        <?php if ($option['type'] === 'checkbox'): ?>
+            <div class="admin__field admin__field-option">
+                <input type="checkbox"
+                       class="admin__control-checkbox"
+                       id="<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>"
+                       name="<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>"
+                       value="1"
+                    <?= $option['checked'] ? 'checked' : '' ?>
+                />
+                <label for="<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>"
+                       class="admin__field-label">
+                    <span><?= $block->escapeHtml($option['label']) ?></span>
+                </label>
+            </div>
+        <?php elseif ($option['type'] === 'text'): ?>
+            <div class="admin__field admin__field-control">
+                <label for="<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>"
+                       class="admin__field-label">
+                    <span><?= $block->escapeHtml($option['label']) ?></span>
+                </label>
+                <input type="text"
+                       class="admin__control-text"
+                       id="<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>"
+                       name="<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>"
+                       value="<?= $block->escapeHtmlAttr($option['value']) ?>"
+                />
+            </div>
+        <?php endif; ?>
+    <?php endforeach; ?>
+
+    <div id="<?= $block->getElement()->getId() ?>_result" class="admin__field-note" style="margin-top: 10px;"></div>
+</div>
+
+<script>
+    require([
+        'jquery',
+        'Magento_Ui/js/modal/alert',
+        'mage/translate'
+    ], function ($, alert) {
+        'use strict';
+
+        $('#<?= $block->getElement()->getId() ?>_button').on('click', function () {
+            var button = $(this);
+            var resultDiv = $('#<?= $block->getElement()->getId() ?>_result');
+            var commandName = '<?= $block->escapeJs($block->getCommandName()) ?>';
+            var options = {};
+
+            <?php foreach ($block->getCommandOptions() as $option): ?>
+                <?php if ($option['type'] === 'checkbox'): ?>
+                    options['<?= $block->escapeJs($option['name']) ?>'] = $('#<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>').is(':checked');
+                <?php elseif ($option['type'] === 'text'): ?>
+                    options['<?= $block->escapeJs($option['name']) ?>'] = $('#<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>').val();
+                <?php endif; ?>
+            <?php endforeach; ?>
+
+            button.attr('disabled', 'disabled');
+            resultDiv.html('<?= $block->escapeJs(__('Executing command... Please wait.')) ?>');
+
+            $.ajax({
+                url: '<?= $block->escapeJs($block->getAjaxUrl()) ?>',
+                type: 'POST',
+                data: {
+                    command: commandName,
+                    options: options,
+                    form_key: window.FORM_KEY
+                },
+                showLoader: true,
+                success: function (response) {
+                    if (response.status === 'success') {
+                        resultDiv.html('<span style="color: green;">' + response.message + '</span>');
+                        if (response.output) {
+                            resultDiv.append('<pre style="background-color: #f0f0f0; padding: 10px; margin-top: 5px; max-height: 300px; overflow-y: auto;">' + response.output + '</pre>');
+                        }
+                    } else {
+                        resultDiv.html('<span style="color: red;">' + response.message + '</span>');
+                        if (response.output) {
+                            resultDiv.append('<pre style="background-color: #f0f0f0; padding: 10px; margin-top: 5px; max-height: 300px; overflow-y: auto;">' + response.output + '</pre>');
+                        }
+                        alert({
+                            title: $.mage.__('Error'),
+                            content: response.message
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    resultDiv.html('<span style="color: red;">' + $.mage.__('An AJAX error occurred:') + ' ' + error + '</span>');
+                    alert({
+                        title: $.mage.__('Error'),
+                        content: $.mage.__('An AJAX error occurred:') + ' ' + error
+                    });
+                },
+                complete: function () {
+                    button.removeAttr('disabled');
+                }
+            });
+        });
+    });
+</script>
