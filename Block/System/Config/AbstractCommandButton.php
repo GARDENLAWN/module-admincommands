@@ -10,7 +10,7 @@ use Magento\Framework\UrlInterface;
 
 abstract class AbstractCommandButton extends Field
 {
-    protected string $_template = 'GardenLawn_AdminCommands::system/config/command_button.phtml';
+    protected $_template = 'GardenLawn_AdminCommands::system/config/command_button.phtml';
 
     protected UrlInterface $urlBuilder;
 
