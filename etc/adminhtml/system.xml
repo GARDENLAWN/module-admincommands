@@ -39,6 +39,19 @@
                     <label>Synchronize Static Assets</label>
                     <frontend_model>GardenLawn\AdminCommands\Block\System\Config\SyncStaticAssetsButton</frontend_model>
                 </field>
+                <!-- SyncDealerPrices Command -->
+                <field id="sync_dealer_prices_button" translate="label" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Synchronize Dealer Prices</label>
+                    <frontend_model>GardenLawn\AdminCommands\Block\System\Config\SyncDealerPricesButton</frontend_model>
+                </field>
+            </group>
+            <group id="company_commands" translate="label" sortOrder="30" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Company Commands</label>
+                <!-- ImportDealers Command -->
+                <field id="import_dealers_button" translate="label" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Import Dealers</label>
+                    <frontend_model>GardenLawn\AdminCommands\Block\System\Config\ImportDealersButton</frontend_model>
+                </field>
             </group>
         </section>
     </system>

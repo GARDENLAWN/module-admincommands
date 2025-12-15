@@ -61,7 +61,14 @@ class Execute extends Action
                 // Area code is already set
             }
 
-            $command = $this->commandList->get($commandName);
+            $command = null;
+            foreach ($this->commandList->getCommands() as $cmd) {
+                if ($cmd->getName() === $commandName) {
+                    $command = $cmd;
+                    break;
+                }
+            }
+
             if (!$command) {
                 throw new Exception(sprintf('Command "%s" not found.', $commandName));
             }
