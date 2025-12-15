@@ -75,7 +75,14 @@ class Execute extends Action
 
             $inputArgs = [];
             foreach ($options as $key => $value) {
-                if ($value === true) { // For checkbox options
+                // Convert string booleans from AJAX request to actual booleans
+                if ($value === 'true') {
+                    $value = true;
+                } elseif ($value === 'false') {
+                    $value = false;
+                }
+
+                if ($value === true) { // For checkbox options (flags)
                     $inputArgs['--' . $key] = true;
                 } elseif ($value !== false && $value !== null && $value !== '') { // For text options
                     $inputArgs['--' . $key] = $value;

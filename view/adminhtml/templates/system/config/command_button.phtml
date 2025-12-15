@@ -1,12 +1,13 @@
 <?php
 /** @var \GardenLawn\AdminCommands\Block\System\Config\AbstractCommandButton $block */
+$elementId = $block->getElement()->getId();
 ?>
 
 <div class="admin__field-control">
     <button type="button"
             class="action- scalable action-primary"
-            id="<?= $block->getElement()->getId() ?>_button"
-            data-ui-id="widget-button-<?= $block->getElement()->getId() ?>_button">
+            id="<?= $elementId ?>_button"
+            data-ui-id="widget-button-<?= $elementId ?>_button">
         <span><?= $block->escapeHtml($block->getElement()->getLabel()) ?></span>
     </button>
     <div class="admin__field-note">
@@ -18,34 +19,77 @@
             <div class="admin__field admin__field-option">
                 <input type="checkbox"
                        class="admin__control-checkbox"
-                       id="<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>"
-                       name="<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>"
+                       id="<?= $elementId ?>_<?= $option['name'] ?>"
+                       name="<?= $elementId ?>_<?= $option['name'] ?>"
                        value="1"
-                    <?= $option['checked'] ? 'checked' : '' ?>
+                    <?= isset($option['checked']) && $option['checked'] ? 'checked' : '' ?>
                 />
-                <label for="<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>"
+                <label for="<?= $elementId ?>_<?= $option['name'] ?>"
                        class="admin__field-label">
                     <span><?= $block->escapeHtml($option['label']) ?></span>
                 </label>
             </div>
         <?php elseif ($option['type'] === 'text'): ?>
             <div class="admin__field admin__field-control">
-                <label for="<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>"
+                <label for="<?= $elementId ?>_<?= $option['name'] ?>"
                        class="admin__field-label">
                     <span><?= $block->escapeHtml($option['label']) ?></span>
                 </label>
                 <input type="text"
                        class="admin__control-text"
-                       id="<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>"
-                       name="<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>"
-                       value="<?= $block->escapeHtmlAttr($option['value']) ?>"
+                       id="<?= $elementId ?>_<?= $option['name'] ?>"
+                       name="<?= $elementId ?>_<?= $option['name'] ?>"
+                       value="<?= $block->escapeHtmlAttr($option['value'] ?? '') ?>"
                 />
             </div>
         <?php endif; ?>
     <?php endforeach; ?>
 
-    <div id="<?= $block->getElement()->getId() ?>_result" class="admin__field-note" style="margin-top: 10px;"></div>
+    <div id="<?= $elementId ?>_progress_bar" class="progress-bar" style="display:none; margin-top: 10px;">
+        <div class="progress-bar-label"><?= $block->escapeHtml(__('Executing...')) ?></div>
+        <div class="progress-bar-line"></div>
+    </div>
+    <div id="<?= $elementId ?>_result" class="admin__field-note command-output" style="margin-top: 10px;"></div>
 </div>
+
+<style>
+    .progress-bar {
+        width: 100%;
+        background-color: #f3f3f3;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        padding: 5px;
+        text-align: center;
+    }
+    .progress-bar-label {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+    .progress-bar-line {
+        width: 100%;
+        height: 10px;
+        background-color: #e9e9e9;
+        background-image: linear-gradient(45deg, rgba(255, 255, 255, .15) 25%, transparent 25%, transparent 50%, rgba(255, 255, 255, .15) 50%, rgba(255, 255, 255, .15) 75%, transparent 75%, transparent);
+        background-size: 40px 40px;
+        animation: progress-bar-stripes 2s linear infinite;
+        border-radius: 4px;
+    }
+    @keyframes progress-bar-stripes {
+        from { background-position: 40px 0; }
+        to { background-position: 0 0; }
+    }
+    .command-output pre {
+        background-color: #f0f0f0;
+        padding: 10px;
+        margin-top: 5px;
+        max-height: 400px;
+        overflow-y: auto;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        white-space: pre-wrap;
+        word-wrap: break-word;
+    }
+</style>
 
 <script>
     require([
@@ -55,22 +99,24 @@
     ], function ($, alert) {
         'use strict';
 
-        $('#<?= $block->getElement()->getId() ?>_button').on('click', function () {
+        $('#<?= $elementId ?>_button').on('click', function () {
             var button = $(this);
-            var resultDiv = $('#<?= $block->getElement()->getId() ?>_result');
+            var resultDiv = $('#<?= $elementId ?>_result');
+            var progressBar = $('#<?= $elementId ?>_progress_bar');
             var commandName = '<?= $block->escapeJs($block->getCommandName()) ?>';
             var options = {};
 
             <?php foreach ($block->getCommandOptions() as $option): ?>
                 <?php if ($option['type'] === 'checkbox'): ?>
-                    options['<?= $block->escapeJs($option['name']) ?>'] = $('#<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>').is(':checked');
+                    options['<?= $block->escapeJs($option['name']) ?>'] = $('#<?= $elementId ?>_<?= $option['name'] ?>').is(':checked');
                 <?php elseif ($option['type'] === 'text'): ?>
-                    options['<?= $block->escapeJs($option['name']) ?>'] = $('#<?= $block->getElement()->getId() ?>_<?= $option['name'] ?>').val();
+                    options['<?= $block->escapeJs($option['name']) ?>'] = $('#<?= $elementId ?>_<?= $option['name'] ?>').val();
                 <?php endif; ?>
             <?php endforeach; ?>
 
             button.attr('disabled', 'disabled');
-            resultDiv.html('<?= $block->escapeJs(__('Executing command... Please wait.')) ?>');
+            resultDiv.empty();
+            progressBar.show();
 
             $.ajax({
                 url: '<?= $block->escapeJs($block->getAjaxUrl()) ?>',
@@ -80,17 +126,18 @@
                     options: options,
                     form_key: window.FORM_KEY
                 },
-                showLoader: true,
+                // Using a longer timeout to prevent premature AJAX errors on long-running scripts
+                timeout: 300000, // 5 minutes
                 success: function (response) {
                     if (response.status === 'success') {
                         resultDiv.html('<span style="color: green;">' + response.message + '</span>');
                         if (response.output) {
-                            resultDiv.append('<pre style="background-color: #f0f0f0; padding: 10px; margin-top: 5px; max-height: 300px; overflow-y: auto;">' + response.output + '</pre>');
+                            resultDiv.append('<pre>' + response.output + '</pre>');
                         }
                     } else {
                         resultDiv.html('<span style="color: red;">' + response.message + '</span>');
                         if (response.output) {
-                            resultDiv.append('<pre style="background-color: #f0f0f0; padding: 10px; margin-top: 5px; max-height: 300px; overflow-y: auto;">' + response.output + '</pre>');
+                            resultDiv.append('<pre>' + response.output + '</pre>');
                         }
                         alert({
                             title: $.mage.__('Error'),
@@ -99,14 +146,22 @@
                     }
                 },
                 error: function (xhr, status, error) {
-                    resultDiv.html('<span style="color: red;">' + $.mage.__('An AJAX error occurred:') + ' ' + error + '</span>');
+                    var errorMessage = $.mage.__('An AJAX error occurred.');
+                    if (status === 'timeout') {
+                        errorMessage = $.mage.__('The request timed out. The command may still be running in the background.');
+                    } else if (error) {
+                        errorMessage += ' ' + error;
+                    }
+
+                    resultDiv.html('<span style="color: red;">' + errorMessage + '</span>');
                     alert({
                         title: $.mage.__('Error'),
-                        content: $.mage.__('An AJAX error occurred:') + ' ' + error
+                        content: errorMessage
                     });
                 },
                 complete: function () {
                     button.removeAttr('disabled');
+                    progressBar.hide();
                 }
             });
         });
