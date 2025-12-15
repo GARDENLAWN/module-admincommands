@@ -3,11 +3,16 @@ declare(strict_types=1);
 
 namespace GardenLawn\AdminCommands\Controller\Adminhtml\Command;
 
+use Exception;
 use Magento\Backend\App\Action;
 use Magento\Backend\App\Action\Context;
 use Magento\Framework\App\Area;
+use Magento\Framework\App\ResponseInterface;
 use Magento\Framework\App\State;
+use Magento\Framework\Controller\Result\Json;
 use Magento\Framework\Controller\Result\JsonFactory;
+use Magento\Framework\Controller\ResultInterface;
+use Magento\Framework\Exception\LocalizedException;
 use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Output\BufferedOutput;
 use Magento\Framework\Console\CommandListInterface;
@@ -21,12 +26,13 @@ class Execute extends Action
     protected LoggerInterface $logger;
 
     public function __construct(
-        Context $context,
-        JsonFactory $resultJsonFactory,
+        Context              $context,
+        JsonFactory          $resultJsonFactory,
         CommandListInterface $commandList,
-        State $appState,
-        LoggerInterface $logger
-    ) {
+        State                $appState,
+        LoggerInterface      $logger
+    )
+    {
         $this->resultJsonFactory = $resultJsonFactory;
         $this->commandList = $commandList;
         $this->appState = $appState;
@@ -34,7 +40,7 @@ class Execute extends Action
         parent::__construct($context);
     }
 
-    public function execute()
+    public function execute(): Json|ResultInterface|ResponseInterface
     {
         $result = $this->resultJsonFactory->create();
         $commandName = $this->getRequest()->getParam('command');
@@ -48,12 +54,16 @@ class Execute extends Action
         }
 
         try {
-            // Set area code to global to allow console commands to run
-            $this->appState->setAreaCode(Area::AREA_GLOBAL);
+            try {
+                // Set area code to global to allow console commands to run
+                $this->appState->setAreaCode(Area::AREA_GLOBAL);
+            } catch (LocalizedException) {
+                // Area code is already set
+            }
 
             $command = $this->commandList->get($commandName);
             if (!$command) {
-                throw new \Exception(sprintf('Command "%s" not found.', $commandName));
+                throw new Exception(sprintf('Command "%s" not found.', $commandName));
             }
 
             $inputArgs = [];
@@ -89,7 +99,7 @@ class Execute extends Action
                     'output' => $commandOutput
                 ]);
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $message = __('An error occurred while executing command "%1": %2', $commandName, $e->getMessage());
             $this->messageManager->addErrorMessage($message);
             $this->logger->critical(sprintf('Admin Command Critical Error: %s', $e->getMessage()), ['exception' => $e]);
