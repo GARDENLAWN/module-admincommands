@@ -1,0 +1,34 @@
+<?php
+/** @var \GardenLawn\AdminCommands\Block\System\Config\BackupList $block */
+$backups = $block->getBackups();
+?>
+<div class="admin__field-control">
+    <?php if (empty($backups)): ?>
+        <div class="message info"><span><?= $block->escapeHtml(__('No backups found.')) ?></span></div>
+    <?php else: ?>
+        <table class="data-grid">
+            <thead>
+                <tr>
+                    <th class="data-grid-th"><?= $block->escapeHtml(__('File Name')) ?></th>
+                    <th class="data-grid-th"><?= $block->escapeHtml(__('Size')) ?></th>
+                    <th class="data-grid-th"><?= $block->escapeHtml(__('Date')) ?></th>
+                    <th class="data-grid-th"><?= $block->escapeHtml(__('Action')) ?></th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($backups as $backup): ?>
+                    <tr>
+                        <td><?= $block->escapeHtml($backup['name']) ?></td>
+                        <td><?= $block->escapeHtml($backup['size']) ?></td>
+                        <td><?= $block->escapeHtml($backup['time']) ?></td>
+                        <td>
+                            <a href="<?= $block->escapeUrl($backup['url']) ?>" class="action-default">
+                                <?= $block->escapeHtml(__('Download')) ?>
+                            </a>
+                        </td>
+                    </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    <?php endif; ?>
+</div>

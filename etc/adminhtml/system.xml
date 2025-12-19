@@ -53,6 +53,17 @@
                     <frontend_model>GardenLawn\AdminCommands\Block\System\Config\ImportDealersButton</frontend_model>
                 </field>
             </group>
+            <group id="backup_commands" translate="label" sortOrder="40" showInDefault="1" showInWebsite="0" showInStore="0">
+                <label>Backup Commands</label>
+                <field id="create_db_backup_button" translate="label" sortOrder="10" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Create DB Backup</label>
+                    <frontend_model>GardenLawn\AdminCommands\Block\System\Config\CreateDbBackupButton</frontend_model>
+                </field>
+                <field id="backup_list" translate="label" sortOrder="20" showInDefault="1" showInWebsite="0" showInStore="0">
+                    <label>Available Backups</label>
+                    <frontend_model>GardenLawn\AdminCommands\Block\System\Config\BackupList</frontend_model>
+                </field>
+            </group>
         </section>
     </system>
 </config>
